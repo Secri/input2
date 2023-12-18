@@ -1,12 +1,12 @@
-// Eléments de paramétrage
-		const input2ID = 'secriVisibleAttributes'; //ID de l'input visible
+                // Eléments de paramétrage
+                const input2ID = 'secriVisibleAttributes'; //ID de l'input visible
 		const timing   = 2000; //Timing pour la suppression auto
 		const keyboardRegex = /[a-zA-Z0-9\'\"\=\-\_ ]/; // Regex d'autorisation des touches du clavier
 		const submitRegex = /src=["']{1}.*/; // Regex d'identification de chaînes interdites
 		const inputMaxLength = 20; // Longueur maximale d'une chaîne dans l'input visible
 		const inputPlaceHolder = '';
 		const ctaDeleteAll = 'Tout effacer';
-		
+				
 		// Fonction qui se lance toute seule pour rester en scope local
 		(function() {
 		
@@ -77,7 +77,7 @@
 							cartouche.setAttribute('class', 'srcError'); 
 						}
 						
-						cartouche.textContent = element;
+						cartouche.textContent = element.toLowerCase();
 						
 						let fermer = document.createElement('i');
 						
