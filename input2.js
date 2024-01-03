@@ -1,247 +1,295 @@
-                // Eléments de paramétrage
-                const input2ID = 'secriVisibleAttributes'; //ID de l'input visible
-		const timing   = 2000; //Timing pour la suppression auto
-		const keyboardRegex = /[a-zA-Z0-9\'\"\=\-\_ ]/; // Regex d'autorisation des touches du clavier
-		const submitRegex = /src=["']{1}.*/; // Regex d'identification de chaînes interdites
-		const inputMaxLength = 20; // Longueur maximale d'une chaîne dans l'input visible
-		const inputPlaceHolder = '';
-		const ctaDeleteAll = 'Tout effacer';
-				
-		// Fonction qui se lance toute seule pour rester en scope local
-		(function() {
-		
-			// on crée une variable qui récupère l'input caché
-			let submitInput = document.getElementById('secriSubmitAttributes');
+// Eléments de paramétrage
+const input2Class = 'secriVisibleAttributes'; //Class de l'input visible
+const timing   = 2000; //Timing pour la suppression auto
+const separatorKey = 'Space';
+const keyboardRegex = /[a-zA-Z0-9\'\"\=\-\_ ]/; // array de Regex d'autorisation des touches du clavier - Propriété keys
+const submitRegex = [/src=["']{1}.*/, /title=["']{1}.*/]; // array de Regex d'identification de chaînes interdites - Propriété forbiddenStrings
+const inputMaxLength = 20; // Longueur maximale d'une chaîne dans l'input visible
+const ctaDeleteAll = 'Tout effacer';
 			
-			// on génère l'input2 en javascript et on le place juste avant l'input caché
-			let input2 = document.createElement('input');
-			input2.setAttribute('type', 'text');
-			if (Number.isInteger(inputMaxLength) && inputMaxLength > 0) {
-				input2.setAttribute('maxlength', inputMaxLength.toString());
-			}
-			input2.setAttribute('id', input2ID);
-			input2.setAttribute('value', submitInput.value); // On met les valeurs de l'input caché dans l'input visible
-			if (inputPlaceHolder.length > 0) {
-				input2.setAttribute('placeholder', inputPlaceHolder);
-			}
+// Objet
+class Input2 {
+			
+	constructor(input, separator, keys, forbiddenStrings) {
+		
+		this.input            = input;
+		this.separator        = separator;
+		this.keys             = keys;
+		this.forbiddenStrings = forbiddenStrings;
 
-			// on met l'input 2 juste avant l'input caché dans le conteneur parent
-			document.getElementById('secriSubmitAttributes').parentNode.prepend(input2);
-					
-			// on crée une variable qui récupère l'input2
-			let theInput = document.getElementById(input2ID);
-			
-			// On cible le parent par défaut de l'input visible, à priori un <td> par défaut sous Wordpress
-			let getParentNode = theInput.parentNode;
-			
-			// On crée le conteneur principal et on lui attribue une class
-			let wrapper = document.createElement('div');
-			wrapper.setAttribute('class', 'inputWrapper');
-			
-			// On crée le conteneur secondaire destiné à recevoir les mot-clés
-			let keywordsWrapper = document.createElement('div');
-			
-			// On crée la div action pour la fonction deleteKeyword
-			let actionDiv = document.createElement('div');
-			actionDiv.setAttribute('class', 'action');
-			let delButton = document.createElement('div');
-			delButton.textContent = ctaDeleteAll;
-			actionDiv.appendChild(delButton);
-			
-			// On remplace l'input par le conteneur dans l'élément parent et on met l'input dans le wrapper
-			getParentNode.replaceChild(wrapper, theInput);
-			wrapper.appendChild(keywordsWrapper);
-			wrapper.appendChild(actionDiv);
-			keywordsWrapper.appendChild(theInput);
-			
-			// On appelle la fonction d'isolation des mot-clés après le chargement du DOM
-			includeKeywords(theInput.value.split(' ').reverse(), theInput);
-			
-			// On appelle la fonction de gestion du clavier lorsque l'utilisateur appuie sur un touche du clavier
-			theInput.onkeydown = handle;
-			
-			// On appelle la fonction qui gère les espaces dans l'input affiché en front
-			theInput.addEventListener('input', handleSpaces);
-			
-			/**** FONCTIONS ****/
-			// Fonction d'injection des mot-clés dans le conteneur à part
-			function includeKeywords(array, input, autoDel='no') {
+	}
 				
-				for (const element of array) {
-					
-					if (element != '') {
-					
-						let cartouche = document.createElement('div');
-						
-						if (autoDel == 'yes') {
-							cartouche.setAttribute('class', 'srcError'); 
-						}
-						
-						cartouche.textContent = element.toLowerCase();
-						
-						let fermer = document.createElement('i');
-						
-						cartouche.appendChild(fermer);
-						
-						keywordsWrapper.prepend(cartouche);
-											
-					}
-						
-				}
+	createInput2() { // Méthode qui crée les éléments HTML et les insère correctement dans le DOM
 				
-				handleVisibility(); //appel de la fonction de la gestion de la visibilité du bouton Del				
-				
-				input.value = '';
-				ecouteur();
-				deleteAll();
+		let input2 = document.createElement('input');
+		input2.setAttribute('type', 'text');
+		input2.setAttribute('class', input2Class);
 					
-				if (autoDel == 'yes') { 
+		if (Number.isInteger(inputMaxLength) && inputMaxLength > 0) {
 					
-					setTimeout( () => { document.querySelectorAll('.inputWrapper .srcError').forEach( (element) => element.remove() ); }, timing);
-					
-				} else { 
-					
-					submitInput.value = pushToSubmitButton();
-					
-				}
-				
-			}
-			
-			// Fonction de restriction des entrées au clavier. Vérification que l'utilisateur n'essaye pas d'entrer une src.
-			function handle(e) {
-		
-				if ( !e.key.match(keyboardRegex) ) {
-				
-					e.preventDefault();  
-					
-				}
-			
-				if (e.code === 'Space' && theInput.value.length > 0) {
-				
-					if (theInput.value.match(submitRegex) || checkRedundant(theInput.value) ) {
-					
-						includeKeywords([theInput.value], theInput, 'yes');
+			input2.setAttribute('maxlength', inputMaxLength.toString());
 						
-					} else {
-						
-						includeKeywords([theInput.value], theInput);
+		}
 					
-					}
-						
-				}
-			
-			}
-			
-			// Fonction de gestion des entrées dans l'input, impossible de commencer la première chaîne de caractères par un espace
-			function handleSpaces(e) {
-			
-				let currentValue = this.value;
-				
-				if (currentValue === ' ') {
+		input2.setAttribute('value', this.input.value);
 					
-					this.value = '';
+		// on met l'input 2 juste avant l'input caché dans le conteneur parent
+		this.input.parentNode.prepend(input2);
+					
+		// On cible le parent par défaut de l'input visible, à priori un <td> par défaut sous Wordpress
+		let getParentNode = input2.parentNode;
+					
+		// On crée le conteneur principal et on lui attribue une class
+		let wrapper = document.createElement('div');
+		wrapper.setAttribute('class', 'inputWrapper');
+					
+		// On crée le conteneur secondaire destiné à recevoir les mot-clés
+		let keywordsWrapper = document.createElement('div');
+			
+		// On crée la div action pour la fonction deleteKeyword
+		let actionDiv = document.createElement('div');
+		actionDiv.setAttribute('class', 'action');
+		let delButton = document.createElement('div');
+		delButton.textContent = ctaDeleteAll;
+		actionDiv.appendChild(delButton);
+					
+		// On remplace l'input par le conteneur dans l'élément parent et on met l'input dans le wrapper
+		getParentNode.replaceChild(wrapper, input2);
+		wrapper.appendChild(keywordsWrapper);
+		wrapper.appendChild(actionDiv);
+		keywordsWrapper.appendChild(input2);
+					
+		//on met le tout dans un conteneur générique indépendant
+		const globalContainer = document.createElement('div');
+		this.input.parentNode.prepend(globalContainer);
+		globalContainer.appendChild(wrapper);
+		globalContainer.appendChild(this.input);
+					
+		//On lance l'isolation des mots clés
+		this.includeKeywords(this.getInitialValue());
+					
+		//On assigne le gestionnaire séparateur dans l'input
+		this.handleSeparatorInput();
+					
+		//On assigne l'écouteur des input clavier
+		this.handleKeyboard();
+					
+		//On ajoute la gestion du bouton delete all
+		this.deleteAll();
+					
+	}
 				
-					return;
-				}
+	getInitialValue() { //Récupère la value de l'input2 sous forme de tableau
+				
+		let target = this.input.previousElementSibling.firstElementChild.lastElementChild;
+				
+		return target.value.split(' ');
+				
+	}
+				
+	includeKeywords(array, autoDel='non') {
+				
+		let visibleInput = this.input.previousElementSibling.firstElementChild.lastElementChild;
+				
+		for (const element of array.reverse()) {
 			
-			}
-			
-			// Fonction de création d'un écouteur permettant de réagir aux clics sur les boutons de suppression
-			function ecouteur() {
-		
-				let cartoucheCollection = document.querySelectorAll('.inputWrapper > div:nth-child(1) div i');
-
-				for (const element of cartoucheCollection) {
-					element.onclick = deleteKeyword;
-				}
-		
-			}
-			
-			// Fonction de suppression des mot-clés et de modification de la valeur de l'input caché
-			function deleteKeyword() {
-		
-				this.parentElement.remove();
+			if (element != '') {
+						
+				let cartouche = document.createElement('div');
 							
-				let getHiddenValue = document.getElementById('secriSubmitAttributes').value.split(' ');
-				
-				let newHiddenValue = getHiddenValue.filter( (word) => word != this.parentElement.textContent );
-				
-				document.getElementById('secriSubmitAttributes').value = newHiddenValue.join(' ');
-				
-				handleVisibility();
-			}
-			
-			//Fonction qui check si le mot clé entré n'existe pas déjà
-			function checkRedundant (value) {
-			
-				const keywordsCollection = document.querySelectorAll('.inputWrapper > div:nth-child(1) > div');
-				
-				for (const element of keywordsCollection) {
-				
-					if (value == element.textContent) {
+				if (autoDel === 'yes') {
 					
-						return true;
-					
-					}
-				
-				}
-				
-				return false;
-			
-			}
-			
-			// Fonction qui pousse les mot-clés dans l'attribut value de l'input caché
-			function pushToSubmitButton() {
-			
-				let keyWords = document.querySelectorAll('.inputWrapper div:nth-child(1) > div');
-				
-				let valueString = [];
-				
-				for (const element of keyWords) {
-				
-					valueString.push(element.textContent);
-					
-				}
-
-				return valueString.join(' ');
-			
-			}
-			
-			// Fonction de gestion du bouton delete All
-			function deleteAll() {
-			
-				const keywordsCollection = document.querySelectorAll('.inputWrapper > div:nth-child(1) > div');
-				
-				delButton.addEventListener('click', () => {
-					
-					for (const element of keywordsCollection) {
-						
-						element.remove();
+					cartouche.setAttribute('class', 'srcError');
 							
-					}
-						
-					submitInput.value = '';
-					
-					handleVisibility();
-						
-				});
-				
-			}
-			
-			function handleVisibility() {
-			
-				let countKeywords = document.querySelectorAll('.inputWrapper > div:nth-child(1) div');
-				
-				if (countKeywords.length > 1) {
-				
-					delButton.style.display = 'block';
-					
-				} else {
-				
-					delButton.style.display = 'none';
-					
 				}
-			
+							
+				cartouche.textContent = element.toLowerCase();
+				let fermer = document.createElement('i');
+				cartouche.appendChild(fermer);
+				this.input.previousElementSibling.firstElementChild.prepend(cartouche);
+							
 			}
-		
-		})();
+			
+		}
+					
+		visibleInput.value = ''; // Après avoir injecté les mots clés on efface la value de l'input visible
+		this.deleteListener();
+		this.handleButtonVisibility();
+					
+		if (autoDel == 'yes') {
+					
+			setTimeout( () => { this.input.previousElementSibling.firstElementChild.querySelectorAll('.srcError').forEach( (element) => element.remove()); this.handleButtonVisibility(); }, timing );
+				
+		} else {
+					
+			this.input.value = this.pushToHiddenInput();
+					
+		}
+					
+	}
+				
+	pushToHiddenInput() {
+				
+		let keyWords = this.input.previousElementSibling.firstElementChild.querySelectorAll('div');
+					
+		let tempArray = []; //Voir pour trouver un moyen plus sexy de faire le job !
+					
+		for (const element of keyWords) {
+					
+			tempArray.push(element.textContent);
+					
+		}
+					
+			return tempArray.join(' ');
+				
+	}
+				
+	deleteListener() {
+				
+		let buttonsCollection = this.input.previousElementSibling.firstElementChild.querySelectorAll('div i');
+					
+		for (const element of buttonsCollection) {
+					
+			element.addEventListener('click', (event)=> { //On utilise un fonction flèche pour ne pas sortir du contexte de l'objet
+						
+				event.target.parentElement.remove();
+							
+				let getHiddenValue = this.input.value.split(' ');
+							
+				let newHiddenValue = getHiddenValue.filter( (word) => word != event.target.parentElement.textContent );
+							
+				this.input.value = newHiddenValue.join(' ');
+							
+				this.handleButtonVisibility();
+						
+			});
+						
+		}
+				
+	}
+				
+	handleKeyboard() {
+				
+		this.input.previousElementSibling.firstElementChild.lastElementChild.addEventListener('keydown', (event)=> { //On utilise un fonction flèche pour ne pas sortir du contexte de l'objet
+					
+			if ( !event.key.match(this.keys) ) { //si l'entrée au clavier matche le séparateur
+							
+				event.preventDefault();  
+							
+			}
+						
+			if (event.code === this.separator && event.target.value.length > 0) {
+						
+				let isValid;
+							
+				for (const regex of this.forbiddenStrings) {
+							
+					if ( event.target.value.match(regex) || this.checkRedundant(event.target.value) ) {
+								
+						isValid = false;
+									
+						this.includeKeywords([event.target.value], 'yes');
+									
+						break;
+						
+					} else { isValid = true; }
+								
+				}
+							
+				if ( isValid ) {
+								
+					this.includeKeywords([event.target.value]);
+								
+				}
+													
+			}
+			
+		});
+					
+	}
+				
+	handleSeparatorInput() {
+				
+		this.input.previousElementSibling.firstElementChild.lastElementChild.addEventListener('input', (event)=> { //On utilise un fonction flèche pour ne pas sortir du contexte de l'objet
+					
+			if (event.target.value === ' ') {
+				
+				event.target.value = '';
+							
+				return;
+					
+			}
+					
+		});
+				
+	}
+				
+	checkRedundant(string) {
+				
+		const keywordsCollection = this.input.previousElementSibling.firstElementChild.querySelectorAll('div');
+					
+		for (const element of keywordsCollection) {
+					
+			if (string === element.textContent) {
+						
+				return true;
+							
+			}
+						
+		}
+					
+		return false;
+				
+	}
+				
+	deleteAll() {
+				
+		this.input.previousElementSibling.lastElementChild.lastElementChild.addEventListener('click', (event)=> {
+					
+			const keywordsCollection = this.input.previousElementSibling.firstElementChild.querySelectorAll('div');
+					
+			for (const element of keywordsCollection) {
+						
+				element.remove();
+						
+			}
+						
+			this.input.value = '';
+						
+			this.handleButtonVisibility();
+										
+		});
+				
+	}
+				
+	handleButtonVisibility() {
+				
+		const keywordsCollection = this.input.previousElementSibling.firstElementChild.querySelectorAll('div');
+					
+		if ( keywordsCollection.length > 1) {
+					
+			this.input.previousElementSibling.lastElementChild.lastElementChild.style.display = 'block';
+						
+		} else {
+					
+			this.input.previousElementSibling.lastElementChild.lastElementChild.style.display = 'none';
+						
+		}
+				
+	}
+				
+}
+			
+let inputs = document.querySelectorAll('.secriSubmitAttributes');
+			
+let instances = {};
+			
+let inc = 0;
+			
+for (const elt of inputs) {
+			
+	inc++;
+	instances[inc] = new Input2(elt, separatorKey, keyboardRegex, submitRegex);
+	instances[inc].createInput2();
+
+}
