@@ -5,17 +5,19 @@ const separatorKey = 'Space';
 const keyboardRegex = /[a-zA-Z0-9\'\"\=\-\_ ]/; // array de Regex d'autorisation des touches du clavier - Propriété keys
 const submitRegex = [/src=["']{1}.*/, /title=["']{1}.*/]; // array de Regex d'identification de chaînes interdites - Propriété forbiddenStrings
 const inputMaxLength = 20; // Longueur maximale d'une chaîne dans l'input visible
+const wordLimit = 5; //Nombre maximum de mots clés à traiter par l'input2
 const ctaDeleteAll = 'Tout effacer';
 			
 // Objet
 class Input2 {
 			
-	constructor(input, separator, keys, forbiddenStrings) {
-		
+	constructor(input, separator, keys, forbiddenStrings, keywordsLimit) {
+				
 		this.input            = input;
 		this.separator        = separator;
 		this.keys             = keys;
 		this.forbiddenStrings = forbiddenStrings;
+		this.keywordsLimit    = keywordsLimit;
 
 	}
 				
@@ -224,9 +226,15 @@ class Input2 {
 				
 	}
 				
-	checkRedundant(string) {
+	checkRedundant(string) { //Vérifie si le mot clé existe déjà ou si la limite de mots clés a été dépassée
 				
 		const keywordsCollection = this.input.previousElementSibling.firstElementChild.querySelectorAll('div');
+					
+		if (keywordsCollection.length >= this.keywordsLimit) {
+					
+			return true;
+						
+		}
 					
 		for (const element of keywordsCollection) {
 					
@@ -234,8 +242,8 @@ class Input2 {
 						
 				return true;
 							
-			}
-						
+			} 
+												
 		}
 					
 		return false;
@@ -290,7 +298,7 @@ let inc = 0;
 for (const elt of inputs) {
 			
 	inc++;
-	instances[inc] = new Input2(elt, separatorKey, keyboardRegex, submitRegex);
+	instances[inc] = new Input2(elt, separatorKey, keyboardRegex, submitRegex, wordLimit);
 	instances[inc].createInput2();
 
 }
