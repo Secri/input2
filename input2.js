@@ -150,7 +150,7 @@ class Input2 {
 					
 		for (const element of buttonsCollection) {
 					
-			element.addEventListener('click', (event)=> { //On utilise un fonction flèche pour ne pas sortir du contexte de l'objet
+			element.addEventListener('click', (event)=> { //On utilise une fonction flèche pour ne pas sortir du contexte de l'objet
 						
 				event.target.parentElement.remove();
 							
@@ -170,7 +170,7 @@ class Input2 {
 				
 	handleKeyboard() {
 				
-		this.input.previousElementSibling.firstElementChild.lastElementChild.addEventListener('keydown', (event)=> { //On utilise un fonction flèche pour ne pas sortir du contexte de l'objet
+		this.input.previousElementSibling.firstElementChild.lastElementChild.addEventListener('keydown', (event)=> { //On utilise une fonction flèche pour ne pas sortir du contexte de l'objet
 					
 			if ( !event.key.match(this.keys) ) { //si l'entrée au clavier matche le séparateur
 							
@@ -210,7 +210,7 @@ class Input2 {
 				
 	handleSeparatorInput() {
 				
-		this.input.previousElementSibling.firstElementChild.lastElementChild.addEventListener('input', (event)=> { //On utilise un fonction flèche pour ne pas sortir du contexte de l'objet
+		this.input.previousElementSibling.firstElementChild.lastElementChild.addEventListener('input', (event)=> { //On utilise une fonction flèche pour ne pas sortir du contexte de l'objet
 					
 			if (event.target.value === ' ') {
 				
@@ -279,7 +279,8 @@ class Input2 {
 	}
 				
 }
-			
+
+// Récupération de la collection des éléments à traiter et instanciation automatique
 let inputs = document.querySelectorAll('.secriSubmitAttributes');
 			
 let instances = {};
