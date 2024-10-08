@@ -274,26 +274,7 @@
 				}
 				
 			}
-			/*window.onload = function() {
-
-				console.log('Window loaded');
-
-				let inputs = document.querySelectorAll('.secriSubmitAttributes');
-				
-				let instances = {};
-				
-				let inc = 0;
-				
-				for (const elt of inputs) {
-				
-					inc++;
-					console.log(elt);
-					instances[inc] = new Input2(elt, separatorKey, keyboardRegex, submitRegex);
-					instances[inc].createInput2();
-				
-				}
 			
-			};*/
 			document.addEventListener('DOMContentLoaded', function() {
 				
 				let inputs = document.querySelectorAll('.secriSubmitAttributes');
