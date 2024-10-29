@@ -286,7 +286,6 @@
 				for (const elt of inputs) {
 				
 					inc++;
-					console.log(elt);
 					instances[inc] = new Input2(elt, separatorKey, keyboardRegex, submitRegex);
 					instances[inc].createInput2();
 				
